@@ -1,5 +1,5 @@
 matplotlib==3.3.2
-numpy==1.21.5
+numpy==1.19.5  # Compatible version with scikit-learn 0.24.2
 torch==1.13.1
 torchvision==0.14.1
 tqdm==4.64.0
@@ -12,4 +12,5 @@ ipykernel==6.4.1
 ipython==7.23.1
 jupyter-client==7.1.2
 tensorboard==2.10.1
+cython==0.29.24  # Add Cython
 
