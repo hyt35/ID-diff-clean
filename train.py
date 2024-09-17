@@ -65,9 +65,9 @@ def train(args):
 
     print_model_size(model)  # Print the size of the model
 
-    sde = VESDE()
+    sde = VESDE(args.vesde_min, args.vesde_max)
     sde.sampling_eps = 1e-5  # or use a value from args if needed
-    ema_model = EMA(model=model, decay=0.999)
+    ema_model = EMA(model=model, decay=args.ema)
 
     optimizer = optim.Adam(model.parameters(), lr=args.learning_rate)
     scheduler = WarmUpScheduler(optimizer, args.learning_rate, warmup_steps=1000)
@@ -151,7 +151,7 @@ if __name__ == "__main__":
 
     # Data settings
     parser.add_argument("--batch_size", type=int, default=64, help="Batch size for training.")
-    parser.add_argument("--dataset", type=str, choices=['sphere', 'euclidean', 'mnist'], default='sphere', help="Type of data.")
+    parser.add_argument("--dataset", type=str, choices=['sphere', 'sphere_scaled', 'euclidean', 'mnist'], default='sphere', help="Type of data.")
     parser.add_argument("--data_samples", type=int, default=10000, help="Number of samples per sphere")
     parser.add_argument("--n_spheres", type=int, default=1, help="Number of spheres")
     parser.add_argument("--ambient_dim", type=int, default=2, help="Dimension of the ambient space")
@@ -161,12 +161,15 @@ if __name__ == "__main__":
     parser.add_argument("--radii", nargs='*', type=float, help='Radii of the spheres')
     parser.add_argument("--angle_std", type=float, default=-1, help='Standard deviation of angles for sampling')
 
+    parser.add_argument("--vesde_min", type=float, default=0.01)
+    parser.add_argument("--vesde_max", type=float, default=50.)
     # Model settings
     parser.add_argument('--network', type=str, choices=['MLP', 'U-NET'], default='MLP', help='Neural Network type')
     parser.add_argument('--hidden_dim', type=int, default=512, help='Hidden dimension for MLP/FCN')
     parser.add_argument('--depth', type=int, default=5, help='Depth (number of hidden layers) for MLP/FCN')
     parser.add_argument("--dropout", type=float, default=0.0, help="Dropout rate in the model")
     parser.add_argument("--learning_rate", type=float, default=0.0001, help="Learning rate.")
+    parser.add_argument("--ema", type=float, default=0.999, help="Learning rate.")
     parser.add_argument("--epochs", type=int, default=1000, help="Number of epochs.")
     parser.add_argument("--checkpoint_frequency", type=int, default=20, help="Frequency of saving checkpoints.")
     parser.add_argument("--patience_epochs", type=int, default=100, help="Number of epochs to wait for improvement before early stopping.")

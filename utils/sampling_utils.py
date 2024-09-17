@@ -168,7 +168,7 @@ def generation_callback(writer, sde, diffusion_model, steps, shape, device, epoc
     
     if samples.shape[1] in [2, 3]:
         # Plot the samples
-        fig, ax = plot_samples(samples)
+        fig, ax = plot_samples(samples.detach().cpu())
         
         # Save the plot to TensorBoard with epoch number in the tag
         save_plot_to_tensorboard(writer, fig, f'Generated Samples/Epoch {epoch + 1}', epoch)

@@ -1,6 +1,6 @@
 from torch.utils.data import DataLoader, TensorDataset, random_split
 from torchvision import datasets, transforms
-from .sphere import KSphereDataset
+from .sphere import KSphereDataset, KSphereScaledDataset
 import numpy as np
 import torch
 
@@ -9,6 +9,8 @@ def get_dataloaders(args):
     batch_size = args.batch_size
     if dataset == 'sphere':
         dataset = KSphereDataset(args)
+    elif dataset == 'sphere_scaled':
+        dataset = KSphereScaledDataset(args)
     else:
         transform = transforms.Compose([
             transforms.ToTensor(),
