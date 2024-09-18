@@ -7,13 +7,15 @@ from data.data_utils import get_dataloaders
 from models.mlp import MLP
 from models.unet import UNet
 from utils.sde import VESDE
-from utils.train_utils import EMA, load_model, eval_callback
+from utils.train_utils import EMA, load_model #, eval_callback
+from utils.tangent_utils import eval_callback_fullSVD
 from utils.sampling_utils import get_score_fn
 
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import pickle
 import json
+import numpy as np
 
 def visualize_data(val_loader, eval_dir):
     points_list = []
@@ -47,7 +49,7 @@ def visualize_data(val_loader, eval_dir):
 def evaluate(args):
     # Set up logging directories
     checkpoint_dir = os.path.join(args.base_log_dir, args.experiment, 'checkpoints')
-    eval_dir = os.path.join(args.base_log_dir, args.experiment, 'eval')
+    eval_dir = os.path.join(args.base_log_dir, args.experiment, 'eval_T')
     os.makedirs(eval_dir, exist_ok=True)
 
     device = torch.device(args.device)
@@ -82,10 +84,10 @@ def evaluate(args):
 
     # Run evaluation callback
     score_fn = get_score_fn(sde, model)  # Use the model with EMA weights applied
-    eval_callback(score_fn, sde, val_loader, args.num_eval_points, args.device, eval_dir)
+    eval_callback_fullSVD(score_fn, sde, val_loader, args.num_eval_points, args.device, eval_dir, force_first=args.force_first)
 
     # Evaluation and plotting
-    singular_values_files = [os.path.join(eval_dir, f) for f in os.listdir(eval_dir) if f.endswith('.pkl')]
+    singular_values_files = [os.path.join(eval_dir, f) for f in os.listdir(eval_dir) if f.endswith('svd.pkl')]
 
     plt.figure(figsize=(10, 6))
     for file in singular_values_files:
@@ -103,6 +105,19 @@ def evaluate(args):
     plt.savefig(spectrum_plot_path)
     plt.close()
     print(f'Saved singular values spectrum plot to {spectrum_plot_path}')
+
+    
+    singular_vectors = np.load(os.path.join(eval_dir, 'sv.npy'))
+    fig, ax = plt.subplots(2,2,figsize=(8,8),dpi=300)
+    for i in range(2):
+        for j in range(2):
+            ctr = 2*i + j
+            im = ax[i,j].imshow(singular_vectors[ctr],interpolation='none')
+            plt.colorbar(im, ax=ax[i,j],fraction=0.046, pad=0.04)
+            ax[i,j].set_axis_off()
+            ax[i,j].invert_yaxis()
+    sv_plot_path = os.path.join(eval_dir, 'singular_vectors.png')
+    fig.savefig(sv_plot_path)
     return singular_values
 
 if __name__ == "__main__":
@@ -110,6 +125,7 @@ if __name__ == "__main__":
 
     # Experiment name must be provided by the user
     parser.add_argument("--experiment", type=str, required=True, help="Experiment name for directory structure.")
+    parser.add_argument("--force_first", type=int, default=-1, help="-1 to ignore, manifold dim to specify first sphere coords.")
 
     # Parse the experiment argument first
     args = parser.parse_args()
@@ -127,10 +143,11 @@ if __name__ == "__main__":
     
     # Add experiment argument again to include it in the final args
     parser.add_argument("--experiment", type=str, required=True, help="Experiment name for directory structure.")
-    
+    parser.add_argument("--force_first", type=int, default=-1, help="-1 to ignore, manifold dim to specify first sphere coords.")
+
     for key, value in args_dict.items():
         # Skip the 'experiment' key as it's already added
-        if key == 'experiment':
+        if key == 'experiment' or key == "force_first":
             continue
         parser.add_argument(f"--{key}", type=type(value), default=value)
 

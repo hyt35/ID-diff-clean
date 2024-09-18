@@ -40,18 +40,25 @@ CUDA_VISIBLE_DEVICES=2 python train.py --experiment=deep_sphere_scaled_50 --devi
 
 
 #%% 17-07-24
+#* Scaled Spheres
 # Still has 11 small SV
+# Poor norm concentration
+# 176 1.4 1.2: 11 eigenvalues <= 1.4
 CUDA_VISIBLE_DEVICES=2 python train.py --experiment=deep_sphere_scaled_10_LR2 --device=cuda --dataset=sphere_scaled --network=MLP --hidden_dim=2048 --learning_rate=2e-4 --ema=0.9999 --vesde_max=14. --ambient_dim=100 --manifold_dim=10 --patience_epochs=200
 
 # 5000 epochs with small LR: has 10 small SV
+# very good concentration
+# 185 73.9 4.5 ... : 10 eigenvalues <= 4.5
 CUDA_VISIBLE_DEVICES=2 python train.py --experiment=deep_sphere_scaled_10 --device=cuda --dataset=sphere_scaled --network=MLP --hidden_dim=2048 --learning_rate=2e-5 --ema=0.9999 --vesde_max=14. --ambient_dim=100 --manifold_dim=10 --patience_epochs=1500 --epochs=5000
 
 #%% scaled and first
 # 11, with not-so-visible jump
 # ... 188 6.5 4.5 4.0 ... : 10 eigenvalues <= 4.5
+# trained for 1000 iters, but loss is still decreasing
 CUDA_VISIBLE_DEVICES=2 python train.py --experiment=deep_sphere_s_f_10 --device=cuda --dataset=sphere_scaled --network=MLP --hidden_dim=2048 --learning_rate=2e-5 --ema=0.9999 --vesde_max=14. --ambient_dim=100 --manifold_dim=10 --patience_epochs=200 --embedding_type=first
 
 # ... 393 31 7.6 7.4 ... : 50 eigenvalues <= 7.6 (approx correct)
+# decent concentration, but still decreasing
 CUDA_VISIBLE_DEVICES=2 python train.py --experiment=deep_sphere_s_f_50 --device=cuda --dataset=sphere_scaled --network=MLP --hidden_dim=2048 --learning_rate=2e-5 --ema=0.9999 --vesde_max=14. --ambient_dim=100 --manifold_dim=50 --patience_epochs=200 --embedding_type=first
 
 # 171 6.3 1.4 : 10 eigenvalues <= 1.4
