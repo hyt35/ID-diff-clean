@@ -1,3 +1,4 @@
+# python eval_save_full_SVD.py --experiment=deep_sphere_s_f_10_LR --force_first=1
 import torch
 import argparse
 import os
@@ -16,6 +17,8 @@ from mpl_toolkits.mplot3d import Axes3D
 import pickle
 import json
 import numpy as np
+from mpl_toolkits.axes_grid1.inset_locator import zoomed_inset_axes
+from mpl_toolkits.axes_grid1.inset_locator import mark_inset
 
 def visualize_data(val_loader, eval_dir):
     points_list = []
@@ -106,16 +109,53 @@ def evaluate(args):
     plt.close()
     print(f'Saved singular values spectrum plot to {spectrum_plot_path}')
 
-    
+    #**********
+    #* 2x2 format
+    #**********
+    # singular_vectors = np.load(os.path.join(eval_dir, 'sv.npy'))
+    # fig, ax = plt.subplots(2,2,figsize=(8,8),dpi=300)
+    # for i in range(2):
+    #     for j in range(2):
+    #         ctr = 2*i + j
+    #         im = ax[i,j].imshow(singular_vectors[ctr],interpolation='none')
+    #         plt.colorbar(im, ax=ax[i,j],fraction=0.046, pad=0.04)
+    #         ax[i,j].set_axis_off()
+    #         ax[i,j].invert_yaxis()
+
+    #**********
+    #* 1x4 format
+    #**********
     singular_vectors = np.load(os.path.join(eval_dir, 'sv.npy'))
-    fig, ax = plt.subplots(2,2,figsize=(8,8),dpi=300)
-    for i in range(2):
-        for j in range(2):
-            ctr = 2*i + j
-            im = ax[i,j].imshow(singular_vectors[ctr],interpolation='none')
-            plt.colorbar(im, ax=ax[i,j],fraction=0.046, pad=0.04)
-            ax[i,j].set_axis_off()
-            ax[i,j].invert_yaxis()
+    fig, ax = plt.subplots(1,4,figsize=(12,3),dpi=300)
+    for i in range(4):
+        ctr = i
+        tmp = singular_vectors[ctr]* np.sign(singular_vectors[ctr][89,i])
+        # im = ax[i].imshow(tmp * np.sign(singular_vectors[ctr][89,i]),interpolation='none')
+        # singular_vectors[ctr]
+        im = ax[i].imshow(tmp,interpolation='none',origin='lower')
+        plt.colorbar(im, ax=ax[i],fraction=0.046, pad=0.04,orientation='horizontal')
+        ax[i].set_axis_off()
+        # ax[i].invert_yaxis()
+        axins = zoomed_inset_axes(ax[i], 3, loc=1) # zoom = 6
+        # axins.imshow(singular_vectors[ctr], interpolation="none",
+        #             origin="lower")
+
+        axins.imshow(tmp, interpolation="none",origin='lower')
+        axins.set_xlim(-0.5,11.5)
+        axins.set_ylim(87.5,99.5)
+        axins.set_xticks([0,9],[1,10])
+        axins.set_yticks([90,99],[10,1])
+        # for axis in ['top','bottom','left','right']:
+        #     # axins.spines[axis].set_linewidth(3)
+        #     axins.spines[axis].set_color('r')
+        # axins.invert_yaxis()
+        # axins.set_axis()
+        mark_inset(ax[i], axins, loc1=3, loc2=1, fc="none", ec="r",lw=1)
+        # sub region of the original image
+        # x1, x2, y1, y2 = -1.5, -0.9, -2.5, -1.9
+        # axins.set_xlim(x1, x2)
+        # axins.set_ylim(y1, y2)
+
     sv_plot_path = os.path.join(eval_dir, 'singular_vectors.png')
     fig.savefig(sv_plot_path)
     return singular_values

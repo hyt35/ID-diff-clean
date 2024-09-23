@@ -151,7 +151,7 @@ if __name__ == "__main__":
 
     # Data settings
     parser.add_argument("--batch_size", type=int, default=64, help="Batch size for training.")
-    parser.add_argument("--dataset", type=str, choices=['sphere', 'sphere_scaled', 'euclidean', 'mnist'], default='sphere', help="Type of data.")
+    parser.add_argument("--dataset", type=str, choices=['sphere', 'sphere_scaled', 'spaghetti', 'mnist'], default='sphere', help="Type of data.")
     parser.add_argument("--data_samples", type=int, default=10000, help="Number of samples per sphere")
     parser.add_argument("--n_spheres", type=int, default=1, help="Number of spheres")
     parser.add_argument("--ambient_dim", type=int, default=2, help="Dimension of the ambient space")
@@ -163,6 +163,8 @@ if __name__ == "__main__":
 
     parser.add_argument("--vesde_min", type=float, default=0.01)
     parser.add_argument("--vesde_max", type=float, default=50.)
+
+    parser.add_argument("--scale", type=float, default=1., help='Scaling for spaghetti line dataset')
     # Model settings
     parser.add_argument('--network', type=str, choices=['MLP', 'U-NET'], default='MLP', help='Neural Network type')
     parser.add_argument('--hidden_dim', type=int, default=512, help='Hidden dimension for MLP/FCN')
