@@ -42,6 +42,7 @@ def get_dataloaders(args):
 # train_loader, val_loader, test_loader = get_dataloaders('sphere', batch_size=64)
 
 def generate_and_save(args):
+    dataset = args.dataset
     torch.manual_seed(0)
     if dataset == 'sphere':
         dataset = KSphereDataset(args)
