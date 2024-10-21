@@ -9,7 +9,7 @@ from models.unet import UNet
 from utils.sde import VESDE
 from utils.train_utils import EMA, load_model
 from utils.sampling_utils import get_score_fn
-from utils.tangent_utils import eval_callback_gaussianSVD
+from utils.tangent_utils import eval_callback_jacSVD
 
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
@@ -48,7 +48,7 @@ def visualize_data(val_loader, eval_dir):
 def evaluate(args):
     # Set up logging directories
     checkpoint_dir = os.path.join(args.base_log_dir, args.experiment, 'checkpoints')
-    eval_dir = os.path.join(args.base_log_dir, args.experiment, 'eval_F')
+    eval_dir = os.path.join(args.base_log_dir, args.experiment, 'eval_jacF')
     os.makedirs(eval_dir, exist_ok=True)
 
     device = torch.device(args.device)
@@ -81,9 +81,9 @@ def evaluate(args):
     # Run evaluation callback
     score_fn = get_score_fn(sde, model)  # Use the model with EMA weights applied
     if args.idx_max == -1:
-        eval_callback_gaussianSVD(score_fn, sde, data, -1, args.device, eval_dir)
+        eval_callback_jacSVD(score_fn, sde, data, -1, args.device, eval_dir)
     else:
-        eval_callback_gaussianSVD(score_fn, sde, data, range(args.idx_max), args.device, eval_dir)
+        eval_callback_jacSVD(score_fn, sde, data, range(args.idx_max), args.device, eval_dir)
 
     # Evaluation and plotting
     singular_values_files = [os.path.join(eval_dir, f) for f in os.listdir(eval_dir) if f.endswith('.pkl')]
